@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
+const DEFAULT_OLLAMA_URL = "http://localhost:11434";
+const DEFAULT_MODEL = "gemma3:4b";
+
 interface OllamaStatus {
   available: boolean;
   configured: boolean;
@@ -8,19 +11,45 @@ interface OllamaStatus {
   message?: string;
 }
 
-async function fetchOllamaStatus(): Promise<OllamaStatus> {
-  const response = await fetch("/api/ollama/status");
-  if (!response.ok) {
-    throw new Error("Failed to fetch Ollama status");
+// Check user's LOCAL Ollama instance directly from browser
+async function fetchLocalOllamaStatus(): Promise<OllamaStatus> {
+  try {
+    const response = await fetch(`${DEFAULT_OLLAMA_URL}/api/tags`, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      return {
+        available: false,
+        configured: false,
+        message: "Ollama is not responding. Make sure it's running.",
+      };
+    }
+
+    const data = await response.json();
+    const models = data.models?.map((m: { name: string }) => m.name) || [];
+
+    return {
+      available: true,
+      configured: true,
+      currentModel: models.includes(DEFAULT_MODEL) ? DEFAULT_MODEL : models[0] || DEFAULT_MODEL,
+      models,
+    };
+  } catch (error) {
+    return {
+      available: false,
+      configured: false,
+      message: "Could not connect to Ollama. Please start Ollama on your computer.",
+    };
   }
-  return response.json();
 }
 
 export function useOllamaStatus() {
   return useQuery<OllamaStatus>({
-    queryKey: ["/api/ollama/status"],
-    queryFn: fetchOllamaStatus,
-    refetchInterval: 30000, // Check every 30 seconds
-    staleTime: 10000, // Consider fresh for 10 seconds
+    queryKey: ["local-ollama-status"],
+    queryFn: fetchLocalOllamaStatus,
+    refetchInterval: 10000, // Check every 10 seconds
+    staleTime: 5000,
+    retry: false,
   });
 }

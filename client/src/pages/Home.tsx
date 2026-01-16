@@ -25,8 +25,6 @@ export default function Home() {
   const [inputValue, setInputValue] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
-  const [useOllama, setUseOllama] = useState(false);
-  const [useLocalBrain, setUseLocalBrain] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const { data: history, isLoading: historyLoading } = useChatHistory();
@@ -98,12 +96,18 @@ export default function Home() {
 
   const handleSend = (text: string) => {
     if (!text.trim()) return;
+    if (!ollamaStatus?.available) {
+      alert("Please start Ollama on your computer first. Download from https://ollama.com");
+      return;
+    }
     
-    sendMessageMutation.mutate({ message: text, useOllama, useLocalBrain }, {
+    sendMessageMutation.mutate({ message: text }, {
       onSuccess: (data) => {
         setInputValue("");
-        // Text is already added to history and will be rendered by the list
         speak(data.response);
+      },
+      onError: (error) => {
+        alert(`Error: ${error.message}. Make sure Ollama is running.`);
       }
     });
   };
@@ -127,6 +131,45 @@ export default function Home() {
       
       {/* Background ambient glow */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+
+      {/* Ollama Setup Banner - Shows when Ollama is not available */}
+      <AnimatePresence>
+        {!ollamaStatus?.available && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-yellow-900/90 to-orange-900/90 border-b border-yellow-500/50 backdrop-blur-md"
+          >
+            <div className="container mx-auto px-4 py-3">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
+                  <div>
+                    <p className="text-white font-mono text-sm font-bold">OLLAMA NOT DETECTED</p>
+                    <p className="text-yellow-200/80 text-xs">Run Ollama on your computer to use AI features</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-xs font-mono">
+                  <div className="hidden md:flex items-center gap-6 text-yellow-200/90">
+                    <span><strong>1.</strong> Install: <code className="bg-black/30 px-2 py-0.5 rounded">curl -fsSL https://ollama.com/install.sh | sh</code></span>
+                    <span><strong>2.</strong> Pull model: <code className="bg-black/30 px-2 py-0.5 rounded">ollama pull gemma3:4b</code></span>
+                    <span><strong>3.</strong> Start: <code className="bg-black/30 px-2 py-0.5 rounded">ollama serve</code></span>
+                  </div>
+                  <a 
+                    href="https://ollama.com/download" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="px-3 py-1.5 bg-yellow-500 text-black font-bold rounded hover:bg-yellow-400 transition-colors"
+                  >
+                    DOWNLOAD OLLAMA
+                  </a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* HUD Header */}
       <header className="fixed top-0 w-full p-6 flex justify-between items-center z-40 border-b border-primary/50 bg-white/10 backdrop-blur-xl shadow-[0_4px_30px_rgba(255,255,255,0.1)]">
@@ -166,35 +209,29 @@ export default function Home() {
           </nav>
         </div>
         <div className="flex gap-4 items-center">
-            <button 
-                onClick={() => setUseLocalBrain(!useLocalBrain)}
+            {/* Ollama Status Indicator */}
+            <div 
                 className={cn(
-                    "px-2 py-1 border text-[10px] font-mono transition-all",
-                    useLocalBrain ? "border-primary bg-primary/20 text-white shadow-[0_0_10px_rgba(255,0,0,0.3)]" : "border-white/20 text-white/40"
-                )}
-                title="Toggle Local AI Brain"
-            >
-                BRAIN: {useLocalBrain ? 'ACTIVE' : 'OFF'}
-            </button>
-            <button 
-                onClick={() => setUseOllama(!useOllama)}
-                disabled={!ollamaStatus?.available}
-                className={cn(
-                    "px-2 py-1 border text-[10px] font-mono transition-all flex items-center gap-1",
-                    !ollamaStatus?.available ? "border-white/10 text-white/20 cursor-not-allowed" :
-                    useOllama ? "border-primary bg-primary/20 text-white shadow-[0_0_10px_rgba(255,0,0,0.3)]" : "border-white/20 text-white/40 hover:border-white/40"
+                    "px-3 py-1.5 border text-[10px] font-mono transition-all flex items-center gap-2",
+                    ollamaStatus?.available 
+                        ? "border-green-500/50 bg-green-500/10 text-green-400" 
+                        : "border-red-500/50 bg-red-500/10 text-red-400"
                 )}
                 title={ollamaStatus?.available 
-                    ? `Ollama (${ollamaStatus?.currentModel || 'gemma3:4b'})` 
-                    : ollamaStatus?.message || "Ollama not available"
+                    ? `Connected to local Ollama (${ollamaStatus?.currentModel || 'gemma3:4b'})` 
+                    : "Ollama not detected - Run 'ollama serve' on your computer"
                 }
             >
                 <span className={cn(
-                    "w-1.5 h-1.5 rounded-full",
+                    "w-2 h-2 rounded-full",
                     ollamaStatus?.available ? "bg-green-500 animate-pulse" : "bg-red-500"
                 )} />
-                OLLAMA: {!ollamaStatus?.available ? 'OFFLINE' : useOllama ? 'ACTIVE' : 'READY'}
-            </button>
+                {ollamaStatus?.available ? (
+                    <span>LOCAL AI: <strong>CONNECTED</strong></span>
+                ) : (
+                    <span>LOCAL AI: <strong>OFFLINE</strong></span>
+                )}
+            </div>
             <button 
                 onClick={() => setTtsEnabled(!ttsEnabled)}
                 className="text-white hover:text-primary transition-colors"
@@ -202,7 +239,9 @@ export default function Home() {
                 {ttsEnabled ? <Volume2 /> : <VolumeX />}
             </button>
             <div className="text-xs font-mono text-white/80">
-                STATUS: <span className="text-primary">ONLINE</span>
+                STATUS: <span className={ollamaStatus?.available ? "text-green-400" : "text-red-400"}>
+                    {ollamaStatus?.available ? "READY" : "WAITING"}
+                </span>
             </div>
         </div>
       </header>
