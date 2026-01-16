@@ -141,29 +141,33 @@ export default function Home() {
             exit={{ opacity: 0, y: -50 }}
             className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-yellow-900/90 to-orange-900/90 border-b border-yellow-500/50 backdrop-blur-md"
           >
-            <div className="container mx-auto px-4 py-3">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
-                  <div>
-                    <p className="text-white font-mono text-sm font-bold">OLLAMA NOT DETECTED</p>
-                    <p className="text-yellow-200/80 text-xs">Run Ollama on your computer to use AI features</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 text-xs font-mono">
-                  <div className="hidden md:flex items-center gap-6 text-yellow-200/90">
-                    <span><strong>1.</strong> Install: <code className="bg-black/30 px-2 py-0.5 rounded">curl -fsSL https://ollama.com/install.sh | sh</code></span>
-                    <span><strong>2.</strong> Pull model: <code className="bg-black/30 px-2 py-0.5 rounded">ollama pull gemma3:4b</code></span>
-                    <span><strong>3.</strong> Start: <code className="bg-black/30 px-2 py-0.5 rounded">ollama serve</code></span>
+            <div className="container mx-auto px-4 py-4">
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
+                    <div>
+                      <p className="text-white font-mono text-sm font-bold">OLLAMA NOT DETECTED</p>
+                      <p className="text-yellow-200/80 text-xs">Run Ollama on your computer with CORS enabled</p>
+                    </div>
                   </div>
                   <a 
                     href="https://ollama.com/download" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 bg-yellow-500 text-black font-bold rounded hover:bg-yellow-400 transition-colors"
+                    className="px-3 py-1.5 bg-yellow-500 text-black font-bold rounded hover:bg-yellow-400 transition-colors text-xs"
                   >
                     DOWNLOAD OLLAMA
                   </a>
+                </div>
+                <div className="bg-black/40 rounded p-3 text-xs font-mono">
+                  <p className="text-yellow-200 mb-2"><strong>Quick Setup (Mac/Linux):</strong></p>
+                  <div className="flex flex-col gap-1 text-yellow-100/80">
+                    <code className="bg-black/50 px-2 py-1 rounded block">1. ollama pull gemma3:4b</code>
+                    <code className="bg-black/50 px-2 py-1 rounded block">2. pkill ollama  <span className="text-yellow-500/60"># Stop if already running</span></code>
+                    <code className="bg-black/50 px-2 py-1 rounded block">3. OLLAMA_ORIGINS="*" ollama serve</code>
+                  </div>
+                  <p className="text-yellow-400/70 mt-2 text-[10px]">⚠️ CORS must be enabled for this website to connect to your local Ollama</p>
                 </div>
               </div>
             </div>
