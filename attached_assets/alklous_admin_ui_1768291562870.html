@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alklous Admin - Backend System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a0a0f;
+            color: #00ff88;
+            overflow-x: hidden;
+        }
+
+        /* Futuristic Background - matching your design */
+        .bg-animated {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at center, rgba(138, 43, 226, 0.15) 0%, transparent 60%),
+                linear-gradient(135deg, #0a0a0f 0%, #1a0f2e 30%, #0f1a2e 60%, #0a0a0f 100%);
+            z-index: -2;
+        }
+
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Scanlines effect */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                transparent 1px,
+                transparent 2px,
+                rgba(0, 0, 0, 0.1) 3px
+            );
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.3;
+        }
+
+        /* Top Navigation - exact match to your design */
+        .top-nav {
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 100;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 35px;
+            height: 35px;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+            color: #ffffff;
+            font-weight: normal;
+            letter-spacing: 3px;
+        }
+
+        .logo-text p {
+            font-size: 10px;
+            color: #888;
+            letter-spacing: 2px;
+            margin-top: 2px;
+        }
+
+        .nav-center {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 5px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: #ffffff;
+            border-bottom-color: #00ff88;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 3px;
+            font-size: 11px;
+            color: #00ff88;
+            letter-spacing: 1px;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .btn {
+            padding: 8px 18px;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-color: #00ff88;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        /* Page Title Section */
+        .page-title-section {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 30px;
+        }
+
+        .page-title {
+            font-size: 48px;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 8px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(138, 43, 226, 0.5);
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 3px;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 8px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(138, 43, 226, 0.1),
+                transparent
+            );
+            transition: all 0.5s;
+        }
+
+        .card:hover::before {
+            left: 100%;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(138, 43, 226, 0.6);
+            box-shadow: 0 10px 30px rgba(138, 43, 226, 0.2);
+        }
+
+        .card-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        .card h3 {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+        }
+
+        .card p {
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+
+        /* Fine-Tuning Page */
+        .fine-tuning-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+        }
+
+        .training-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 8px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .panel-title {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            letter-spacing: 2px;
+        }
+
+        .badge {
+            padding: 6px 15px;
+            border-radius: 3px;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-ready {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            border: 1px solid rgba(0, 255, 136, 0.3);
+        }
+
+        .badge-training {
+            background: rgba(255, 136, 0, 0.1);
+            color: #ff8800;
+            border: 1px solid rgba(255, 136, 0, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Prompt Items */
+        .prompt-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .prompt-item:hover {
+            border-color: rgba(138, 43, 226, 0.5);
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .prompt-label {
+            color: #00ff88;
+            font-weight: bold;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .btn-remove {
+            padding: 5px 12px;
+            background: rgba(255, 0, 68, 0.1);
+            border: 1px solid rgba(255, 0, 68, 0.3);
+            color: #ff0044;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-remove:hover {
+            background: rgba(255, 0, 68, 0.2);
+            border-color: #ff0044;
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 4px;
+            padding: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: rgba(138, 43, 226, 0.6);
+            background: rgba(0, 0, 0, 0.6);
+        }
+
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .weight-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weight-control label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .weight-control input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 3px;
+            padding: 5px 10px;
+            color: rgba(255, 255, 255, 0.8);
+            width: 80px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* Config Panel */
+        .config-item {
+            margin-bottom: 20px;
+        }
+
+        .config-item label {
+            display: block;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .config-item input,
+        .config-item select {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 4px;
+            padding: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .config-item input:focus,
+        .config-item select:focus {
+            outline: none;
+            border-color: rgba(138, 43, 226, 0.6);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 35px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8a2be2, #00ff88);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        /* Button Groups */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        .info-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .info-panel p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .info-panel strong {
+            color: #00ff88;
+        }
+
+        /* Hidden class */
+        .hidden {
+            display: none;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(138, 43, 226, 0.5);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(138, 43, 226, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .fine-tuning-layout {
+                grid-template-columns: 1fr;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animated"></div>
+    <div class="grid-overlay"></div>
+    <div class="scanlines"></div>
+
+    <!-- Top Navigation - Matching Your Design -->
+    <div class="top-nav">
+        <div class="logo-section">
+            <div class="logo-icon">◉</div>
+            <div class="logo-text">
+                <h1>ALKULOUS</h1>
+                <p>SYS.AI.01</p>
+            </div>
+        </div>
+        <div class="nav-center">
+            <a href="#" class="nav-link active" onclick="showPage('dashboard')">DASHBOARD</a>
+            <a href="#" class="nav-link" onclick="showPage('finetuning')">FINE-TUNING</a>
+            <a href="#" class="nav-link">ANALYTICS</a>
+            <a href="#" class="nav-link">SETTINGS</a>
+        </div>
+        <div class="nav-actions">
+            <div class="status-indicator">
+                <span class="status-dot"></span>
+                <span>STATUS: ONLINE</span>
+            </div>
+            <button class="btn" onclick="logout()">LOGOUT</button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Dashboard Page -->
+        <div id="dashboard-page">
+            <div class="page-title-section">
+                <h1 class="page-title">ADMIN CONTROL PANEL</h1>
+                <p class="page-subtitle">ALKULOUS NEURAL NETWORK MANAGEMENT SYSTEM</p>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Fine-Tuning Card -->
+                <div class="card">
+                    <div class="card-icon">🎯</div>
+                    <h3>FINE-TUNING</h3>
+                    <p>Train and optimize Alkulous sys.01 model with custom prompts and response patterns. Configure learning parameters and monitor training progress in real-time.</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">12</div>
+                            <div class="stat-label">Sessions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">147</div>
+                            <div class="stat-label">Prompts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Card -->
+                <div class="card">
+                    <div class="card-icon">📊</div>
+                    <h3>MODEL ANALYTICS</h3>
+                    <p>Real-time performance metrics, response accuracy, and training history visualization. Track model improvements and analyze behavioral patterns over time.</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">98.7%</div>
+                            <div class="stat-label">Accuracy</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">0.8s</div>
+                            <div class="stat-label">Response</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Status Card -->
+                <div class="card">
+                    <div class="card-icon">⚡</div>
+                    <h3>SYSTEM STATUS</h3>
+                    <p>Monitor server health, API status, and resource utilization. View system logs and error reports in real-time with advanced diagnostics.</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">ACTIVE</div>
+                            <div class="stat-label">Status</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuration Card -->
+                <div class="card">
+                    <div class="card-icon">⚙️</div>
+                    <h3>CONFIGURATION</h3>
+                    <p>Manage model parameters, API keys, and system preferences. Control access permissions, security settings, and deployment configurations.</p>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">sys.01</div>
+                            <div class="stat-label">Version</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">SECURE</div>
+                            <div class="stat-label">Mode</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fine-Tuning Page -->
+        <div id="finetuning-page" class="hidden">
+            <div class="page-title-section">
+                <h1 class="page-title">FINE-TUNING INTERFACE</h1>
+                <p class="page-subtitle">NEURAL NETWORK TRAINING MODULE</p>
+            </div>
+
+            <div class="fine-tuning-layout">
+                <!-- Training Panel -->
+                <div class="training-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">TRAINING PROMPTS</h2>
+                        <span class="badge badge-ready" id="statusBadge">READY</span>
+                    </div>
+
+                    <div id="promptsContainer">
+                        <!-- Prompt items will be rendered here -->
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn" onclick="addPrompt()">+ ADD PROMPT</button>
+                        <button class="btn" onclick="saveTraining()">💾 SAVE</button>
+                        <button class="btn" onclick="exportJSON()">📥 EXPORT</button>
+                        <button class="btn" onclick="importJSON()">📁 IMPORT</button>
+                    </div>
+
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-fill" id="progressFill">0%</div>
+                    </div>
+
+                    <button class="btn" style="width: 100%; margin-top: 20px;" onclick="startTraining()">
+                        ▶️ START TRAINING
+                    </button>
+                </div>
+
+                <!-- Config Panel -->
+                <div class="training-panel">
+                    <div class="panel-header">
+                        <h2 class="panel-title">CONFIGURATION</h2>
+                    </div>
+
+                    <div class="config-item">
+                        <label>Learning Rate</label>
+                        <input type="number" id="learningRate" value="0.001" step="0.0001">
+                    </div>
+
+                    <div class="config-item">
+                        <label>Epochs</label>
+                        <input type="number" id="epochs" value="10" min="1">
+                    </div>
+
+                    <div class="config-item">
+                        <label>Batch Size</label>
+                        <input type="number" id="batchSize" value="4" min="1">
+                    </div>
+
+                    <div class="config-item">
+                        <label>Temperature</label>
+                        <input type="number" id="temperature" value="0.7" step="0.1" min="0" max="2">
+                    </div>
+
+                    <div class="config-item">
+                        <label>Model Version</label>
+                        <select id="modelVersion">
+                            <option value="sys.01">sys.01 (Current)</option>
+                            <option value="sys.02">sys.02 (Experimental)</option>
+                        </select>
+                    </div>
+
+                    <div class="info-panel">
+                        <p><strong>Total Prompts:</strong> <span id="totalPrompts">0</span></p>
+                        <p><strong>Status:</strong> <span id="serverStatus">Connected</span></p>
+                        <p><strong>Last Save:</strong> <span id="lastSave">Never</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let prompts = [];
+        let promptIdCounter = 1;
+
+        // Page Navigation
+        function showPage(pageName) {
+            document.getElementById('dashboard-page').classList.add('hidden');
+            document.getElementById('finetuning-page').classList.add('hidden');
+            document.getElementById(pageName + '-page').classList.remove('hidden');
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        // Prompt Management
+        function addPrompt() {
+            const prompt = {
+                id: promptIdCounter++,
+                prompt: '',
+                response: '',
+                weight: 1.0
+            };
+            prompts.push(prompt);
+            renderPrompts();
+        }
+
+        function removePrompt(id) {
+            prompts = prompts.filter(p => p.id !== id);
+            renderPrompts();
+        }
+
+        function updatePrompt(id, field, value) {
+            const prompt = prompts.find(p => p.id === id);
+            if (prompt) {
+                prompt[field] = value;
+            }
+        }
+
+        function renderPrompts() {
+            const container = document.getElementById('promptsContainer');
+            if (prompts.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255, 255, 255, 0.3); text-align: center; padding: 30px;">No training prompts yet. Click "ADD PROMPT" to begin.</p>';
+            } else {
+                container.innerHTML = prompts.map(p => `
+                    <div class="prompt-item">
+                        <div class="prompt-header">
+                            <span class="prompt-label">PROMPT #${p.id}</span>
+                            <button class="btn-remove" onclick="removePrompt(${p.id})">REMOVE</button>
+                        </div>
+                        <textarea 
+                            rows="3" 
+                            placeholder="Enter training prompt..."
+                            onchange="updatePrompt(${p.id}, 'prompt', this.value)"
+                        >${p.prompt}</textarea>
+                        <textarea 
+                            rows="3" 
+                            placeholder="Enter expected response..."
+                            onchange="updatePrompt(${p.id}, 'response', this.value)"
+                        >${p.response}</textarea>
+                        <div class="weight-control">
+                            <label>WEIGHT:</label>
+                            <input 
+                                type="number" 
+                                value="${p.weight}" 
+                                step="0.1" 
+                                min="0"
+                                onchange="updatePrompt(${p.id}, 'weight', parseFloat(this.value))"
+                            >
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            document.getElementById('totalPrompts').textContent = prompts.length;
+        }
+
+        function saveTraining() {
+            alert('Training data saved to server!');
+            document.getElementById('lastSave').textContent = new Date().toLocaleString();
+        }
+
+        function exportJSON() {
+            const data = {
+                model: 'alkulous-sys.01',
+                config: {
+                    learningRate: parseFloat(document.getElementById('learningRate').value),
+                    epochs: parseInt(document.getElementById('epochs').value),
+                    batchSize: parseInt(document.getElementById('batchSize').value),
+                    temperature: parseFloat(document.getElementById('temperature').value),
+                    modelVersion: document.getElementById('modelVersion').value
+                },
+                trainingData: prompts,
+                timestamp: new Date().toISOString()
+            };
+
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `alkulous-training-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importJSON() {
+            alert('Import functionality - Upload your training JSON file');
+        }
+
+        function startTraining() {
+            if (prompts.length === 0) {
+                alert('Please add at least one training prompt!');
+                return;
+            }
+
+            const statusBadge = document.getElementById('statusBadge');
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+
+            statusBadge.className = 'badge badge-training';
+            statusBadge.textContent = 'TRAINING...';
+            progressBar.style.display = 'block';
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressFill.style.width = progress + '%';
+                progressFill.textContent = progress +
