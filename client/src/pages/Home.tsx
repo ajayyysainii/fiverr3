@@ -5,7 +5,7 @@ import { CyberButton } from "@/components/CyberButton";
 import { AudioVisualizer } from "@/components/AudioVisualizer";
 import { AvatarDisplay } from "@/components/AvatarDisplay";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Send, Trash2, Volume2, VolumeX, Radio, LogOut, User as UserIcon, Layout } from "lucide-react";
+import { Mic, Send, Trash2, Volume2, VolumeX, Radio, LogOut, User as UserIcon, Layout, HelpCircle, X } from "lucide-react";
 import 'regenerator-runtime/runtime';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 import { useAuth } from "@/hooks/use-auth";
@@ -25,6 +25,7 @@ export default function Home() {
   const [inputValue, setInputValue] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(true);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const { data: history, isLoading: historyLoading } = useChatHistory();
@@ -131,49 +132,6 @@ export default function Home() {
       
       {/* Background ambient glow */}
       <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
-
-      {/* Ollama Setup Banner - Shows when Ollama is not available */}
-      <AnimatePresence>
-        {!ollamaStatus?.available && (
-          <motion.div
-            initial={{ opacity: 0, y: -50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -50 }}
-            className="fixed top-0 left-0 right-0 z-[60] bg-gradient-to-r from-yellow-900/90 to-orange-900/90 border-b border-yellow-500/50 backdrop-blur-md"
-          >
-            <div className="container mx-auto px-4 py-4">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 bg-yellow-500 rounded-full animate-pulse" />
-                    <div>
-                      <p className="text-white font-mono text-sm font-bold">OLLAMA NOT DETECTED</p>
-                      <p className="text-yellow-200/80 text-xs">Run Ollama on your computer with CORS enabled</p>
-                    </div>
-                  </div>
-                  <a 
-                    href="https://ollama.com/download" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="px-3 py-1.5 bg-yellow-500 text-black font-bold rounded hover:bg-yellow-400 transition-colors text-xs"
-                  >
-                    DOWNLOAD OLLAMA
-                  </a>
-                </div>
-                <div className="bg-black/40 rounded p-3 text-xs font-mono">
-                  <p className="text-yellow-200 mb-2"><strong>Quick Setup (Mac/Linux):</strong></p>
-                  <div className="flex flex-col gap-1 text-yellow-100/80">
-                    <code className="bg-black/50 px-2 py-1 rounded block">1. ollama pull gemma3:4b</code>
-                    <code className="bg-black/50 px-2 py-1 rounded block">2. pkill ollama  <span className="text-yellow-500/60"># Stop if already running</span></code>
-                    <code className="bg-black/50 px-2 py-1 rounded block">3. OLLAMA_ORIGINS="*" ollama serve</code>
-                  </div>
-                  <p className="text-yellow-400/70 mt-2 text-[10px]">⚠️ CORS must be enabled for this website to connect to your local Ollama</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* HUD Header */}
       <header className="fixed top-0 w-full p-6 flex justify-between items-center z-40 border-b border-primary/50 bg-white/10 backdrop-blur-xl shadow-[0_4px_30px_rgba(255,255,255,0.1)]">
@@ -394,11 +352,113 @@ export default function Home() {
 
       </main>
       
-      {/* Decorative footer elements */}
-      <div className="fixed bottom-4 left-4 text-[10px] text-primary/30 font-mono">
-        SYSTEM_ID: ALK_9000<br/>
-        LATENCY: 12ms
-      </div>
+      {/* Help Button - Bottom Left */}
+      <button
+        onClick={() => setShowHelpModal(true)}
+        className={cn(
+          "fixed bottom-4 left-4 z-50 flex items-center gap-2 px-3 py-2 rounded-lg font-mono text-xs transition-all",
+          "border backdrop-blur-md shadow-lg",
+          ollamaStatus?.available 
+            ? "bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20" 
+            : "bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20 animate-pulse"
+        )}
+      >
+        <HelpCircle className="w-4 h-4" />
+        <span className="hidden sm:inline">
+          {ollamaStatus?.available ? "AI CONNECTED" : "SETUP REQUIRED"}
+        </span>
+        <span className={cn(
+          "w-2 h-2 rounded-full",
+          ollamaStatus?.available ? "bg-green-500" : "bg-yellow-500"
+        )} />
+      </button>
+
+      {/* Help Modal */}
+      <AnimatePresence>
+        {showHelpModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setShowHelpModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative max-w-lg w-full bg-gradient-to-br from-gray-900 to-black border border-primary/30 rounded-lg p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-4">
+                <div className={cn(
+                  "w-3 h-3 rounded-full",
+                  ollamaStatus?.available ? "bg-green-500 animate-pulse" : "bg-yellow-500 animate-pulse"
+                )} />
+                <h2 className="text-xl font-bold text-white font-mono">
+                  {ollamaStatus?.available ? "✓ OLLAMA CONNECTED" : "OLLAMA SETUP"}
+                </h2>
+              </div>
+
+              {ollamaStatus?.available ? (
+                <div className="space-y-4">
+                  <p className="text-green-400 font-mono text-sm">Local AI is connected and ready!</p>
+                  <div className="bg-green-500/10 border border-green-500/30 rounded p-3 text-sm">
+                    <p className="text-green-300">Model: <strong>{ollamaStatus.currentModel || "gemma3:4b"}</strong></p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-yellow-200/80 text-sm">
+                    Run Ollama on your computer to enable AI features. This keeps your data private and free!
+                  </p>
+
+                  {/* Setup Steps */}
+                  <div className="bg-black/50 rounded-lg p-4 font-mono text-sm space-y-3">
+                    <p className="text-primary font-bold">Quick Setup (Mac/Linux):</p>
+                    <div className="space-y-2 text-gray-300">
+                      <div className="flex gap-2">
+                        <span className="text-primary">1.</span>
+                        <code className="bg-black/50 px-2 py-1 rounded flex-1">ollama pull gemma3:4b</code>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-primary">2.</span>
+                        <code className="bg-black/50 px-2 py-1 rounded flex-1">pkill ollama</code>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-primary">3.</span>
+                        <code className="bg-black/50 px-2 py-1 rounded flex-1">OLLAMA_ORIGINS="*" ollama serve</code>
+                      </div>
+                    </div>
+                    <p className="text-yellow-400/70 text-xs mt-3">
+                      ⚠️ CORS must be enabled (OLLAMA_ORIGINS="*") for this website to connect
+                    </p>
+                  </div>
+
+                  {/* Download Button */}
+                  <a 
+                    href="https://ollama.com/download" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="block w-full text-center py-3 bg-primary text-white font-bold rounded hover:bg-primary/80 transition-colors"
+                  >
+                    DOWNLOAD OLLAMA
+                  </a>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
